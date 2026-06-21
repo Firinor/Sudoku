@@ -4,25 +4,20 @@ using UnityEngine;
 
 public static class DifficultyShuffle
 {
-    public static List<MajhongTileView> ShuffleEasy(List<MajhongTileView> listTiles)
+    public static List<SudokuTileView> ShuffleEasy(List<SudokuTileView> listTiles)
     {
-        List<MajhongTileView> result = new();
+        List<SudokuTileView> result = new();
         
         List<Sprite> tilesShuffled = GetShuffeledDatas(listTiles);
         
-        List<MajhongTileView> tilesToCheck = new(listTiles);
+        List<SudokuTileView> tilesToCheck = new(listTiles);
         
         //Decomposition
         //int layer = 1; //Debug
         while (result.Count < listTiles.Count)
         {
-            List<MajhongTileView> tilesLayer = new();
-
-            foreach (var checkTile in tilesToCheck)
-            {
-                if(!MajhongSolitaireRules.CheckNeighbors(checkTile))
-                    tilesLayer.Add(checkTile);
-            }
+            List<SudokuTileView> tilesLayer = new();
+            
             foreach (var checkTile in tilesLayer)
             {
                 checkTile.IsPlayable = false;
@@ -39,18 +34,15 @@ public static class DifficultyShuffle
         int currentIndex = 0;
         foreach (var tile in result)
         {
-            tile.EnableVisual();
             tile.IsPlayable = true;
-            tile.SetData(tilesShuffled[currentIndex]);
-            tile.Unselect();
             currentIndex++;
         }
         
         return result;
     }
-    public static List<MajhongTileView> ShuffleNormal(List<MajhongTileView> listTiles)
+    public static List<SudokuTileView> ShuffleNormal(List<SudokuTileView> listTiles)
     {
-        List<MajhongTileView> tilesToSpawn = new();
+        List<SudokuTileView> tilesToSpawn = new();
         
         List<Sprite> tilesShuffled = GetShuffeledDatas(listTiles);
         
@@ -58,39 +50,35 @@ public static class DifficultyShuffle
         int Count = listTiles.Count;
         while (tilesToSpawn.Count < Count)
         {
-            List<MajhongTileView> tilesToCheck = new(listTiles);
-            MajhongTileView randomTile1 = null;
+            List<SudokuTileView> tilesToCheck = new(listTiles);
+            SudokuTileView randomTile1 = null;
             while(randomTile1 == null)
             {
                 if (tilesToCheck.Count > 0)
                 {
-                    MajhongTileView randomTile = tilesToCheck.PullRandom();
-                    if (MajhongSolitaireRules.CheckNeighbors(randomTile))
-                        continue;
+                    SudokuTileView randomTile = tilesToCheck.PullRandom();
                     randomTile1 = randomTile;
                     listTiles.Remove(randomTile1);
                 }
                 else
                 {
-                    MajhongTileView randomTile = listTiles.PullRandom();
+                    SudokuTileView randomTile = listTiles.PullRandom();
                     randomTile1 = randomTile;
                 }
                 tilesToSpawn.Add(randomTile1);
             }
-            MajhongTileView randomTile2 = null;
+            SudokuTileView randomTile2 = null;
             while(randomTile2 == null)
             {
                 if (tilesToCheck.Count > 0)
                 {
-                    MajhongTileView randomTile = tilesToCheck.PullRandom();
-                    if (MajhongSolitaireRules.CheckNeighbors(randomTile))
-                        continue;
+                    SudokuTileView randomTile = tilesToCheck.PullRandom();
                     randomTile2 = randomTile;
                     listTiles.Remove(randomTile2);
                 }
                 else
                 {
-                    MajhongTileView randomTile = listTiles.PullRandom();
+                    SudokuTileView randomTile = listTiles.PullRandom();
                     randomTile2 = randomTile;
                 }
                 tilesToSpawn.Add(randomTile2);
@@ -106,16 +94,13 @@ public static class DifficultyShuffle
         int currentIndex = 0;
         foreach (var tile in tilesToSpawn)
         {
-            tile.EnableVisual();
             tile.IsPlayable = true;
-            tile.SetData(tilesShuffled[currentIndex]);
-            tile.Unselect();
             currentIndex++;
         }
 
         return tilesToSpawn;
     }
-    public static List<MajhongTileView> ShuffleHard(List<MajhongTileView> listTiles)
+    public static List<SudokuTileView> ShuffleHard(List<SudokuTileView> listTiles)
     {
         List<Sprite> tilesShuffled = GetShuffeledDatas(listTiles);
         
@@ -125,22 +110,15 @@ public static class DifficultyShuffle
         int currentIndex = 0;
         foreach (var tile in listTiles)
         {
-            tile.EnableVisual();
-            tile.SetData(tilesShuffled[currentIndex]);
-            tile.Unselect();
             currentIndex++;
         }
 
         return listTiles;
     }
     
-    private static List<Sprite> GetShuffeledDatas(List<MajhongTileView> listTiles)
+    private static List<Sprite> GetShuffeledDatas(List<SudokuTileView> listTiles)
     {
         List<Sprite> result = new();
-        foreach (var tileView in listTiles)
-        {
-            result.Add(tileView.Sprite);
-        }
 
         var sorted = result
             .OrderBy(t => t.GetHashCode())

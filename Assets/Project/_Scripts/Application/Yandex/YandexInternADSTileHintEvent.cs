@@ -8,7 +8,8 @@ namespace FirYandexService
         private float timer = 60f;
         private float _timer;
         
-        public MajhongSolitaireRules Rules;
+        public SudokuRules Rules;
+        
         private void Awake()
         {
             if(FirYG2Service.instance == null)

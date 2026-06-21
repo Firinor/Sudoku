@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public static class Extensions
+public static class GameMath
 {
     public static T GetRandom<T>(this List<T> list)
     {
@@ -27,5 +27,10 @@ public static class Extensions
             list[k] = list[n];
             list[n] = value;
         }
+    }
+    
+    public static bool HeadsOrTails()
+    {
+        return Random.Range(0, 2)==0 ? true: false;
     }
 }
