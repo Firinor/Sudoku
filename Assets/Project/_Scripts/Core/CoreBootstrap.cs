@@ -38,7 +38,7 @@ public class CoreBootstrap : MonoBehaviour
         
         settings.Initialize();
         pool.ClearAll(instant: true);
-        StartCoroutine(DeckInitialize(EmptyDesk()));
+        //StartCoroutine(DeckInitialize(EmptyDesk()));
         rules.Initialize(player);
     }
 
