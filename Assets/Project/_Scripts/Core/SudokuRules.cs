@@ -13,7 +13,7 @@ public class SudokuRules : MonoBehaviour
         Debug.Log(IsSolved(GameField.TempField));
     }
 
-    public bool IsSolved(int[] field)
+    public static bool IsSolved(int[] field)
     {
         for (int i = 0; i < 81; i++)
             if (field[i] == 0) 
@@ -32,7 +32,7 @@ public class SudokuRules : MonoBehaviour
         return true;
     }
     
-    private bool HasAllDigits(int[] field, int start, int step, bool container = false)
+    private static bool HasAllDigits(int[] field, int start, int step, bool container = false)
     {
         bool[] seen = new bool[10];
         for (int j = 0; j < 9; j++)
