@@ -71,7 +71,7 @@ MonoBehaviour:
   mark7: {fileID: 0}
   mark8: {fileID: 0}
   mark9: {fileID: 0}
-  MainColor: {fileID: 0}
+  MainColor: {fileID: 8309152375996053154}
 --- !u!114 &8309152375996053154
 MonoBehaviour:
   m_ObjectHideFlags: 0

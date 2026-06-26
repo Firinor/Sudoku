@@ -12,8 +12,8 @@ public class CoreBootstrap : MonoBehaviour
     //private int NumberOfUniqueTiles;
     [SerializeField] 
     private Settings settings;
-    [SerializeField] 
-    private TilePool pool;
+    //[SerializeField] 
+    //private TilePool pool;
     [SerializeField] 
     private SudokuRules rules;
     
@@ -37,7 +37,7 @@ public class CoreBootstrap : MonoBehaviour
         LoadPlayerData();
         
         settings.Initialize();
-        pool.ClearAll(instant: true);
+        //pool.ClearAll(instant: true);
         //StartCoroutine(DeckInitialize(EmptyDesk()));
         rules.Initialize(player);
     }
@@ -88,11 +88,6 @@ public class CoreBootstrap : MonoBehaviour
 #endif
         player.FirstLoad();
         //tileData = tiles.First(t => string.Equals(t.ID, player.TilesID));
-    }
-
-    public void Shuffle()
-    {
-        StartCoroutine(DeckInitialize(pool.GetAll()));
     }
     
     private IEnumerator DeckInitialize(List<SudokuTileView> listTiles)

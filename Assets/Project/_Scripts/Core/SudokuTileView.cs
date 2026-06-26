@@ -1,4 +1,5 @@
-﻿using TMPro;
+﻿using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,4 +20,14 @@ public class SudokuTileView : MonoBehaviour
     public TextMeshProUGUI mark9;
 
     public Image MainColor;
+
+    public void ResetTileColor()
+    {
+        MainColor.color = Color.white;
+    }
+
+    public void ErrorColor()
+    {
+        MainColor.color = Color.paleVioletRed;
+    }
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Sudoku;
 using UnityEngine;
 
 public class GameField : MonoBehaviour
@@ -35,10 +36,19 @@ public class GameField : MonoBehaviour
         9,1,2,  3,4,5,  6,7,8
     };
 
-    private void OnEnable()
+    private List<int> required = new List<int>();
+    
+    public void OnEnable()
     {
         HardGeneration();
+        GridToWhite();
         PrintView();
+    }
+
+    private void GridToWhite()
+    {
+        foreach (var tile in Tiles)
+            tile.ResetTileColor();
     }
 
     private void EasyGeneration()
@@ -102,7 +112,6 @@ public class GameField : MonoBehaviour
             TempField[i] = mask[result];
         }
     }
-
     private void HardGeneration()
     {
         List<int> arr = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -119,7 +128,8 @@ public class GameField : MonoBehaviour
         List<int> box1 = new List<int>();
         List<int> box2 = new List<int>();
         List<int> box3 = new List<int>();
-        for (int i = 0; i < 9; i++)
+        
+        for (int i = 0; i < 8; i++)//We are sorting only 8 columns. The last column will be resolved automatically.
         {
             if (i % 3 == 0)
             {
@@ -128,35 +138,66 @@ public class GameField : MonoBehaviour
                 box3 = new List<int>();
             }
             
-            List<int> collum = new List<int>();
+            List<int> column = new List<int>();
             
             for (int j = 0; j < 9; j++)
             {
                 int localIndex = i+j*9;
-                int number = TempField[localIndex];
-
-                List<int> targetBox = j switch
+                List<int> targetBox = (localIndex / 9) switch
                 {
                     <3 => box1,//123
                     >5 => box3,//789
                     _ => box2//345
                 };
-
-                int localIndexIterator = localIndex;
-                int errorCooldown = localIndexIterator % 9;
-                while (
-                    (targetBox.Contains(number) || collum.Contains(number))
-                       && errorCooldown < 8)
+                ColumnSorterer(localIndex, targetBox, column);
+                if (localIndex == 46 || localIndex == 49 || localIndex == 52)
                 {
-                    localIndexIterator++;
-                    errorCooldown++;
-                    (TempField[localIndex], TempField[localIndexIterator]) = (TempField[localIndexIterator], TempField[localIndex]);
-                    number = TempField[localIndex];
+                    required = new List<int>();
                 }
-                
-                targetBox.Add(number);
-                collum.Add(number);
             }
+            
+        }
+    }
+
+    private void ColumnSorterer(int localIndex, List<int> targetBox, List<int> column)
+    {
+        int boxIndex = localIndex / 9 % 3;
+        int number = TempField[localIndex];
+        
+        int rowIndexIterator = localIndex;
+        int errorCooldown = rowIndexIterator % 9;//9 collums
+        
+        foreach (var variable in targetBox)
+        {
+            required.Remove(variable);
+        }
+
+        bool onlyRequired = 3-required.Count == boxIndex;
+        
+        while (
+            (targetBox.Contains(number) 
+             || column.Contains(number))
+             || (onlyRequired && !required.Contains(number))
+            )
+        {
+            rowIndexIterator++;
+            errorCooldown++;
+            if (errorCooldown > 8)//out of index
+            {
+                Debug.LogError("errorCooldown > 8");
+                break;
+            }
+            (TempField[localIndex], TempField[rowIndexIterator]) = (TempField[rowIndexIterator], TempField[localIndex]);
+            number = TempField[localIndex];
+        }
+                
+        targetBox.Add(number);
+        column.Add(number);
+        required.Remove(number);
+                
+        if (localIndex == 19 || localIndex == 22 || localIndex == 25)
+        {
+            required = Block.Revert(targetBox);
         }
     }
 
