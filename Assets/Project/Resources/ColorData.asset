@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a41bcc17de5c0a948a0104ab6f61111b, type: 3}
+  m_Name: ColorData
+  m_EditorClassIdentifier: Assembly-CSharp::ColorData
+  RootText: {r: 0.21960786, g: 0.21960786, b: 0.21960786, a: 1}
+  PlayerText: {r: 0.31238878, g: 0.3531875, b: 0.5660378, a: 1}
+  ErrorText: {r: 0.3254902, g: 0, b: 0, a: 1}
+  DefaultTile: {r: 0.9607844, g: 0.9607844, b: 0.9607844, a: 1}
+  PlayerSelectedTile: {r: 0, g: 0, b: 0, a: 0}
+  NumberTile: {r: 0, g: 0, b: 0, a: 0}
+  HelperTile: {r: 0.38679248, g: 0.38679248, b: 0.38679248, a: 1}
+  ErrorTile: {r: 0.735849, g: 0.45469916, b: 0.45469916, a: 1}

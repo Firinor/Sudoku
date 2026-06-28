@@ -20,5 +20,14 @@ namespace Sudoku
             }
             return result;
         }
+        public static HashSet<int> Revert(HashSet<int> ints)
+        {
+            HashSet<int> result = new HashSet<int>{1,2,3,4,5,6,7,8,9};
+            foreach (var number in ints)
+            {
+                result.Remove(number);
+            }
+            return result;
+        }
     }
 }

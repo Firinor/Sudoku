@@ -1,5 +1,4 @@
-﻿using System;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,11 +22,11 @@ public class SudokuTileView : MonoBehaviour
 
     public void ResetTileColor()
     {
-        MainColor.color = Color.white;
+        Main.color = CoreData.Colors.RootText;
     }
 
     public void ErrorColor()
     {
-        MainColor.color = Color.paleVioletRed;
+        Main.color = CoreData.Colors.ErrorText;
     }
 }

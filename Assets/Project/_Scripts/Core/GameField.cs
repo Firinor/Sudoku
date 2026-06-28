@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Sudoku;
 using UnityEngine;
 
@@ -35,8 +36,6 @@ public class GameField : MonoBehaviour
         6,7,8,  9,1,2,  3,4,5,
         9,1,2,  3,4,5,  6,7,8
     };
-
-    private List<int> required = new List<int>();
     
     public void OnEnable()
     {
@@ -112,6 +111,7 @@ public class GameField : MonoBehaviour
             TempField[i] = mask[result];
         }
     }
+
     private void HardGeneration()
     {
         List<int> arr = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -124,214 +124,326 @@ public class GameField : MonoBehaviour
 
             TempField[i] = arr[i % 9];
         }
-        
+
         List<int> box1 = new List<int>();
         List<int> box2 = new List<int>();
         List<int> box3 = new List<int>();
+        List<int> box4 = new List<int>();
+        List<int> box5 = new List<int>();
+        List<int> box6 = new List<int>();
+        List<int> box7 = new List<int>();
+        List<int> box8 = new List<int>();
+        List<int> box9 = new List<int>();
+
+        List<int> column1 = new List<int>();
+        List<int> column2 = new List<int>();
+        List<int> column3 = new List<int>();
+        List<int> column4 = new List<int>();
+        List<int> column5 = new List<int>();
+        List<int> column6 = new List<int>();
+        List<int> column7 = new List<int>();
+        List<int> column8 = new List<int>();
+
+        List<int> column9 = new List<int>();
+
+        List<int> targetBox;
+        List<int> column;
+
+        HashSet<int> required = new();
+        HashSet<int> blocked = new();
+        HashSet<int> nominants = new();
         
-        for (int i = 0; i < 8; i++)//We are sorting only 8 columns. The last column will be resolved automatically.
+        int rowMajorIndex;
+        
+        for (int i = 0; i < 72; i++) //We are sorting only 8 columns. The last column will be resolved automatically.
         {
-            if (i % 3 == 0)
+#region box
+            //column-major cicle
+            //147
+            //258
+            //369
+            //row-major cicle
+            //123
+            //456
+            //789
+            rowMajorIndex = (i % 9) * 9 + (i / 9);//From column-major to row-major
+            
+            int collumIndex = i / 9;
+            column = collumIndex switch
             {
-                box1 = new List<int>();
-                box2 = new List<int>();
-                box3 = new List<int>();
+                0 => column1,
+                1 => column2,
+                2 => column3,
+                3 => column4,
+                4 => column5,
+                5 => column6,
+                6 => column7,
+                7 => column8,
+                _ => column9
+            };
+            
+            targetBox = i switch
+            {
+                0 or 1 or 2 or
+                9 or 10 or 11 or
+                18 or 19 or 20 => box1,
+                3 or 4 or 5 or
+                12 or 13 or 14 or
+                21 or 22 or 23 => box2,
+                6 or 7 or 8 or
+                15 or 16 or 17 or
+                24 or 25 or 26 => box3,
+
+                27 or 28 or 29 or
+                36 or 37 or 38 or
+                45 or 46 or 47 => box4,
+                30 or 31 or 32 or
+                39 or 40 or 41 or
+                48 or 49 or 50 => box5,
+                33 or 34 or 35 or
+                42 or 43 or 44 or
+                51 or 52 or 53 => box6,
+
+                54 or 55 or 56 or
+                63 or 64 or 65 or
+                72 or 73 or 74 => box7,
+                57 or 58 or 59 or
+                66 or 67 or 68 or
+                75 or 76 or 77 => box8,
+                _ => box9
+            };
+#endregion
+            switch (i)
+            {
+                case 12:
+                    required = Block.Revert(box1).ToHashSet();
+                    P_ColumnSorterer();
+                    break;
+                case 13:
+                case 14:
+                    P_ColumnSorterer();
+                    break;
+                case 32:
+                    FindHiddenLocks_SetToBlockedHashSet_Index32();
+                    J_ColumnSorterer();
+                    break;
+                case 33:
+                    List<HashSet<int>> results = FindHiddenLocks_SetToReuireList_Index33_34_35();
+                    ToNumber_ColumnSorterer(results[0]);
+                    i++;
+                    rowMajorIndex = (i % 9) * 9 + (i / 9);
+                    ToNumber_ColumnSorterer(results[1]);
+                    i++;
+                    rowMajorIndex = (i % 9) * 9 + (i / 9);
+                    ToNumber_ColumnSorterer(results[2]);
+                    break;
+                default:
+                    DefaultColumnSorterer();
+                    break;
             }
+        }
+
+        void ToNumber_ColumnSorterer(HashSet<int> target)
+        {
+            int number = TempField[rowMajorIndex];
+
+            int rowIndexIterator = rowMajorIndex;
+            int errorCooldown = rowIndexIterator % 9; //9 collums
             
-            List<int> column = new List<int>();
-            
-            for (int j = 0; j < 9; j++)
+            while (!target.Contains(number))
             {
-                int localIndex = i+j*9;
-                List<int> targetBox = (localIndex / 9) switch
+                rowIndexIterator++;
+                errorCooldown++;
+                if (errorCooldown > 8) //out of index
                 {
-                    <3 => box1,//123
-                    >5 => box3,//789
-                    _ => box2//345
-                };
-                ColumnSorterer(localIndex, targetBox, column);
-                if (localIndex == 46 || localIndex == 49 || localIndex == 52)
-                {
-                    required = new List<int>();
+                    Debug.LogError("errorCooldown > 8");
+                    break;
                 }
+
+                (TempField[rowMajorIndex], TempField[rowIndexIterator]) = (TempField[rowIndexIterator], TempField[rowMajorIndex]);
+                number = TempField[rowMajorIndex];
+            }
+
+            targetBox.Add(number);
+            column.Add(number);
+        }
+        void J_ColumnSorterer()
+        {
+            int number = TempField[rowMajorIndex];
+
+            int rowIndexIterator = rowMajorIndex;
+            int errorCooldown = rowIndexIterator % 9; //9 collums
+            
+            while (targetBox.Contains(number)
+                   || column.Contains(number)
+                   || blocked.Contains(number))
+            {
+                rowIndexIterator++;
+                errorCooldown++;
+                if (errorCooldown > 8) //out of index
+                {
+                    Debug.LogError("errorCooldown > 8");
+                    break;
+                }
+
+                (TempField[rowMajorIndex], TempField[rowIndexIterator]) = (TempField[rowIndexIterator], TempField[rowMajorIndex]);
+                number = TempField[rowMajorIndex];
+            }
+
+            targetBox.Add(number);
+            column.Add(number);
+            blocked.Remove(number);
+        }
+        
+        void P_ColumnSorterer()
+        {
+            int boxIndex = rowMajorIndex / 9 % 3;
+            int number = TempField[rowMajorIndex];
+
+            int rowIndexIterator = rowMajorIndex;
+            int errorCooldown = rowIndexIterator % 9; //9 collums
+
+            foreach (var variable in targetBox)
+            {
+                required.Remove(variable);
+            }
+
+            bool onlyRequired = 3 - required.Count == boxIndex;
+
+            while (targetBox.Contains(number)
+                   || column.Contains(number)
+                   || (onlyRequired && !required.Contains(number)))
+            {
+                rowIndexIterator++;
+                errorCooldown++;
+                if (errorCooldown > 8) //out of index
+                {
+                    Debug.LogError("errorCooldown > 8");
+                    break;
+                }
+
+                (TempField[rowMajorIndex], TempField[rowIndexIterator]) = (TempField[rowIndexIterator], TempField[rowMajorIndex]);
+                number = TempField[rowMajorIndex];
+            }
+
+            targetBox.Add(number);
+            column.Add(number);
+            required.Remove(number);
+        }
+        void DefaultColumnSorterer()
+        {
+            int number = TempField[rowMajorIndex];
+
+            int rowIndexIterator = rowMajorIndex;
+            int errorCooldown = rowIndexIterator % 9; //9 collums
+            
+            while (targetBox.Contains(number)
+                   || column.Contains(number))
+            {
+                rowIndexIterator++;
+                errorCooldown++;
+                if (errorCooldown > 8) //out of index
+                {
+                    Debug.LogError("errorCooldown > 8");
+                    break;
+                }
+
+                (TempField[rowMajorIndex], TempField[rowIndexIterator]) = (TempField[rowIndexIterator], TempField[rowMajorIndex]);
+                number = TempField[rowMajorIndex];
+            }
+
+            targetBox.Add(number);
+            column.Add(number);
+        }
+        
+        void FindHiddenLocks_SetToBlockedHashSet_Index32()
+        {
+            blocked = column4.ToHashSet();
+            blocked.Add(TempField[54]);
+            blocked.Add(TempField[55]);
+            blocked.Add(TempField[56]);
+            int countLine = blocked.Count;
+            if (countLine == 8)
+            {
+                blocked = Block.Revert(blocked);
+                return;
+            }
+            blocked = column4.ToHashSet();
+            blocked.Add(TempField[63]);
+            blocked.Add(TempField[64]);
+            blocked.Add(TempField[65]);
+            countLine = blocked.Count;
+            if (countLine == 8)
+            {
+                blocked = Block.Revert(blocked);
+                return;
+            }
+            blocked = column4.ToHashSet();
+            blocked.Add(TempField[72]);
+            blocked.Add(TempField[73]);
+            blocked.Add(TempField[74]);
+            countLine = blocked.Count;
+            if (countLine == 8)
+            {
+                blocked = Block.Revert(blocked);
+                return;
+            }
+            blocked = new();
+        }
+        List<HashSet<int>> FindHiddenLocks_SetToReuireList_Index33_34_35()
+        {
+            List<HashSet<int>> result = new ();
+            
+            nominants = Block.Revert(column4.ToHashSet());
+            result.Add(nominants);
+            
+            HashSet<int> checkLine = new HashSet<int>()
+            {
+                TempField[63],
+                TempField[64],
+                TempField[65]
+            };
+            checkLine.IntersectWith(nominants);
+            if (checkLine.Count == 2)
+            {
+                HashSet<int> Line2 = new(nominants);
+                Line2.ExceptWith(checkLine);
+                result.Add(Line2);
+
+                nominants.Remove(Line2.First());
+                result.Add(nominants);
+                
+                return result;
             }
             
+            checkLine = new HashSet<int>()
+            {
+                TempField[72],
+                TempField[73],
+                TempField[74]
+            };
+            
+            checkLine.IntersectWith(nominants);
+            if (checkLine.Count == 2)
+            {
+                HashSet<int> Line3 = new(nominants);
+                Line3.ExceptWith(checkLine);
+                
+                nominants.Remove(Line3.First());
+                result.Add(nominants);
+                
+                result.Add(Line3);
+
+                return result;
+            }
+
+            result.Add(nominants);
+            result.Add(nominants);
+            
+            return result;
         }
     }
 
-    private void ColumnSorterer(int localIndex, List<int> targetBox, List<int> column)
-    {
-        int boxIndex = localIndex / 9 % 3;
-        int number = TempField[localIndex];
-        
-        int rowIndexIterator = localIndex;
-        int errorCooldown = rowIndexIterator % 9;//9 collums
-        
-        foreach (var variable in targetBox)
-        {
-            required.Remove(variable);
-        }
-
-        bool onlyRequired = 3-required.Count == boxIndex;
-        
-        while (
-            (targetBox.Contains(number) 
-             || column.Contains(number))
-             || (onlyRequired && !required.Contains(number))
-            )
-        {
-            rowIndexIterator++;
-            errorCooldown++;
-            if (errorCooldown > 8)//out of index
-            {
-                Debug.LogError("errorCooldown > 8");
-                break;
-            }
-            (TempField[localIndex], TempField[rowIndexIterator]) = (TempField[rowIndexIterator], TempField[localIndex]);
-            number = TempField[localIndex];
-        }
-                
-        targetBox.Add(number);
-        column.Add(number);
-        required.Remove(number);
-                
-        if (localIndex == 19 || localIndex == 22 || localIndex == 25)
-        {
-            required = Block.Revert(targetBox);
-        }
-    }
-
-    private void f()
-    {
-        bool[] sorted = new bool[81];
-
-        for (int i = 0; i < 9; i++)
-        {
-            bool backtrack = false;
-            
-            for (int a = 0; a < 2; a++)
-            {
-                bool[] registered = new bool[10];
-                int rowOrigin = i * 9;
-                int colOrigin = i;
-                
-                for (int j = 0; j < 9; j++)
-                {
-                    int step = (a % 2 == 0) ? rowOrigin + j : colOrigin + j * 9;
-                    int num = TempField[step];
-
-                    if (!registered[num]) 
-                        registered[num] = true;
-                    else
-                    {
-                        //BAS (Box and Adjacent-cell Swap)
-                        for (int y = j; y >= 0; y--)
-                        {
-                            int scan = (a % 2 == 0) ? i * 9 + y : i + 9 * y;
-                            if (TempField[scan] == num)
-                            {
-                                for (int z = (a % 2 == 0) ? (i % 3 + 1) * 3 : 0; z < 9; z++)
-                                {
-                                    if (a % 2 == 1 && z % 3 <= i % 3)
-                                        continue;
-
-                                    int boxOrigin = ((scan % 9) / 3) * 3 + (scan / 27) * 27;
-                                    int boxStep = boxOrigin + (z / 3) * 9 + (z % 3);
-                                    int boxNum = TempField[boxStep];
-
-                                    if ((!sorted[scan] && !sorted[boxStep] && !registered[boxNum])
-                                        || (sorted[scan] && !registered[boxNum] && (a % 2 == 0 ? boxStep % 9 == scan % 9 : boxStep / 9 == scan / 9)))
-                                    {
-                                        TempField[scan] = boxNum;
-                                        TempField[boxStep] = num;
-                                        registered[boxNum] = true;
-                                    }
-                                    else if (z == 8)
-                                    {
-                                        // PAS (Preferred Adjacent Swap)
-                                        int searchingNo = num;
-                                        bool[] blindSwapIndex = new bool[81];
-
-                                        for (int q = 0; q < 18; q++)
-                                        {
-                                            for (int b = 0; b <= j; b++)
-                                            {
-                                                int pacing = (a % 2 == 0) ? rowOrigin + b : colOrigin + b * 9;
-                                                if (TempField[pacing] == searchingNo)
-                                                {
-                                                    int adjacentCell = -1;
-                                                    int adjacentNo = -1;
-                                                    int decrement = (a % 2 == 0) ? 9 : 1;
-
-                                                    for (int c = 1; c < 3 - (i % 3); c++)
-                                                    {
-                                                        adjacentCell = pacing + (a % 2 == 0 ? (c + 1) * 9 : c + 1);
-
-                                                        if ((a % 2 == 0 && adjacentCell >= 81)
-                                                            || (a % 2 == 1 && adjacentCell % 9 == 0))
-                                                            adjacentCell -= decrement;
-                                                        else
-                                                        {
-                                                            adjacentNo = TempField[adjacentCell];
-                                                            if (i % 3 != 0
-                                                                || c != 1
-                                                                || blindSwapIndex[adjacentCell]
-                                                                || registered[adjacentNo])
-                                                                adjacentCell -= decrement;
-                                                        }
-                                                        adjacentNo = TempField[adjacentCell];
-
-                                                        if (!blindSwapIndex[adjacentCell])
-                                                        {
-                                                            blindSwapIndex[adjacentCell] = true;
-                                                            TempField[pacing] = adjacentNo;
-                                                            TempField[adjacentCell] = searchingNo;
-                                                            searchingNo = adjacentNo;
-
-                                                            if (!registered[adjacentNo])
-                                                            {
-                                                                registered[adjacentNo] = true;
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        //ABS (Advance and Backtrack Sort)
-                                        backtrack = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (a % 2 == 0)
-                {
-                    for (int j = 0; j < 9; j++) 
-                        sorted[i * 9 + j] = true;
-                }
-                else if (!backtrack)
-                {
-                    for (int j = 0; j < 9; j++) 
-                        sorted[i + j * 9] = true;
-                }
-                else
-                {
-                    backtrack = false;
-                    for (int j = 0; j < 9; j++) 
-                        sorted[i * 9 + j] = false;
-                    for (int j = 0; j < 9; j++) 
-                        sorted[(i - 1) * 9 + j] = false;
-                    for (int j = 0; j < 9; j++) 
-                        sorted[i - 1 + j * 9] = false;
-                    i -= 2;
-                }
-            }
-        }
-    }
-    
     private void PrintView()
     {
         for (int i = 0; i < TempField.Length; i++)
