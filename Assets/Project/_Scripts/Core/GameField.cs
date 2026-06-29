@@ -7,22 +7,7 @@ public class GameField : MonoBehaviour
 {
     public SudokuTileView[] Tiles;
     
-    private readonly int[] GameFieldArray = new int[81]
-    {
-        1,2,3,  4,5,6,  7,8,9,
-        4,5,6,  7,8,9,  1,2,3,
-        7,8,9,  1,2,3,  4,5,6,
-        
-        2,3,4,  5,6,7,  8,9,1,
-        5,6,7,  8,9,1,  2,3,4,
-        8,9,1,  2,3,4,  5,6,7,
-        
-        3,4,5,  6,7,8,  9,1,2,
-        6,7,8,  9,1,2,  3,4,5,
-        9,1,2,  3,4,5,  6,7,8
-    };
-    
-    public int[] TempField = new int[81]
+    public readonly int[] Field = new int[81]
     {
         1,2,3,  4,5,6,  7,8,9,
         4,5,6,  7,8,9,  1,2,3,
@@ -52,7 +37,7 @@ public class GameField : MonoBehaviour
 
     private void EasyGeneration()
     {
-        TempField = (int[])GameFieldArray.Clone();
+        int[] TempField = (int[])Field.Clone();
         
         Dictionary<int, int> mask = new();
         List<int> randomNumbers = new List<int>{1,2,3,4,5,6,7,8,9};
@@ -78,7 +63,7 @@ public class GameField : MonoBehaviour
         rowsContainer2.Shuffle();
         rowsContainer3.Shuffle();
 
-        for(int i = 0; i < GameFieldArray.Length; i++)
+        for(int i = 0; i < Field.Length; i++)
         {
             int collum = i/3 % 3;
             int collumCorrection = collums[collum] == collum ? 0 :
@@ -107,47 +92,46 @@ public class GameField : MonoBehaviour
             } * 9;
 
             int resultIndex = i + collumCorrection + rowCorrection + collumContainerCorrection + rowContainerCorrection;
-            int result = GameFieldArray[resultIndex];
+            int result = Field[resultIndex];
             TempField[i] = mask[result];
         }
     }
 
     private void HardGeneration()
     {
-        List<int> arr = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        TempField = new int[81];
-
-        for (int i = 0; i < 81; i++)
-        {
-            if (i % 9 == 0)
-                arr.Shuffle();
-
-            TempField[i] = arr[i % 9];
-        }
-
-        List<int> box1 = new List<int>();
-        List<int> box2 = new List<int>();
-        List<int> box3 = new List<int>();
-        List<int> box4 = new List<int>();
-        List<int> box5 = new List<int>();
-        List<int> box6 = new List<int>();
-        List<int> box7 = new List<int>();
-        List<int> box8 = new List<int>();
-        List<int> box9 = new List<int>();
-
-        List<int> column1 = new List<int>();
-        List<int> column2 = new List<int>();
-        List<int> column3 = new List<int>();
-        List<int> column4 = new List<int>();
-        List<int> column5 = new List<int>();
-        List<int> column6 = new List<int>();
-        List<int> column7 = new List<int>();
-        List<int> column8 = new List<int>();
-
-        List<int> column9 = new List<int>();
-
-        List<int> targetBox;
-        List<int> column;
+        HashSet<int> box1 = new ();
+        HashSet<int> box2 = new ();
+        HashSet<int> box3 = new ();
+        HashSet<int> box4 = new ();
+        HashSet<int> box5 = new ();
+        HashSet<int> box6 = new ();
+        HashSet<int> box7 = new ();
+        HashSet<int> box8 = new ();
+        HashSet<int> box9 = new ();
+        
+        HashSet<int> column1 = new ();
+        HashSet<int> column2 = new ();
+        HashSet<int> column3 = new ();
+        HashSet<int> column4 = new ();
+        HashSet<int> column5 = new ();
+        HashSet<int> column6 = new ();
+        HashSet<int> column7 = new ();
+        HashSet<int> column8 = new ();
+        HashSet<int> column9 = new ();
+    
+        HashSet<int> row1 = new ();
+        HashSet<int> row2 = new ();
+        HashSet<int> row3 = new ();
+        HashSet<int> row4 = new ();
+        HashSet<int> row5 = new ();
+        HashSet<int> row6 = new ();
+        HashSet<int> row7 = new ();
+        HashSet<int> row8 = new ();
+        HashSet<int> row9 = new ();
+        
+        HashSet<int> targetBox;
+        HashSet<int> column;
+        HashSet<int> row;
 
         HashSet<int> required = new();
         HashSet<int> blocked = new();
@@ -180,6 +164,20 @@ public class GameField : MonoBehaviour
                 6 => column7,
                 7 => column8,
                 _ => column9
+            };
+            
+            int rowIndex = i % 9;
+            row = rowIndex switch
+            {
+                0 => row1,
+                1 => row2,
+                2 => row3,
+                3 => row4,
+                4 => row5,
+                5 => row6,
+                6 => row7,
+                7 => row8,
+                _ => row9
             };
             
             targetBox = i switch
@@ -216,18 +214,15 @@ public class GameField : MonoBehaviour
             switch (i)
             {
                 case 12:
-                    required = Block.Revert(box1).ToHashSet();
-                    P_ColumnSorterer();
-                    break;
                 case 13:
                 case 14:
-                    P_ColumnSorterer();
+                    P_ColumnSorterer(box1);
                     break;
                 case 32:
                     FindHiddenLocks_SetToBlockedHashSet_Index32();
                     J_ColumnSorterer();
                     break;
-                case 33:
+                /*case 33:
                     List<HashSet<int>> results = FindHiddenLocks_SetToReuireList_Index33_34_35();
                     ToNumber_ColumnSorterer(results[0]);
                     i++;
@@ -236,13 +231,13 @@ public class GameField : MonoBehaviour
                     i++;
                     rowMajorIndex = (i % 9) * 9 + (i / 9);
                     ToNumber_ColumnSorterer(results[2]);
-                    break;
+                    break;*/
                 default:
                     DefaultColumnSorterer();
                     break;
             }
         }
-
+        /*
         void ToNumber_ColumnSorterer(HashSet<int> target)
         {
             int number = TempField[rowMajorIndex];
@@ -266,138 +261,146 @@ public class GameField : MonoBehaviour
 
             targetBox.Add(number);
             column.Add(number);
-        }
+        }*/
         void J_ColumnSorterer()
         {
-            int number = TempField[rowMajorIndex];
+            int number = Field[rowMajorIndex];
 
-            int rowIndexIterator = rowMajorIndex;
-            int errorCooldown = rowIndexIterator % 9; //9 collums
+            nominants = Block.Revert(targetBox);
+            nominants.IntersectWith(Block.Revert(column));
+            nominants.IntersectWith(Block.Revert(row));
+            nominants.ExceptWith(blocked);
             
-            while (targetBox.Contains(number)
-                   || column.Contains(number)
-                   || blocked.Contains(number))
+            if (nominants.Count == 0)
             {
-                rowIndexIterator++;
-                errorCooldown++;
-                if (errorCooldown > 8) //out of index
-                {
-                    Debug.LogError("errorCooldown > 8");
-                    break;
-                }
-
-                (TempField[rowMajorIndex], TempField[rowIndexIterator]) = (TempField[rowIndexIterator], TempField[rowMajorIndex]);
-                number = TempField[rowMajorIndex];
+                Debug.LogError("Zero nominants");
+                number = 0;
+            }
+            else
+            {
+                number = nominants.ToList().PullRandom();
             }
 
+            Field[rowMajorIndex] = number;
+            
             targetBox.Add(number);
             column.Add(number);
-            blocked.Remove(number);
+            row.Add(number);
         }
-        
-        void P_ColumnSorterer()
+        void P_ColumnSorterer(HashSet<int> upperBox)
         {
-            int boxIndex = rowMajorIndex / 9 % 3;
-            int number = TempField[rowMajorIndex];
+            int number = Field[rowMajorIndex];
 
-            int rowIndexIterator = rowMajorIndex;
-            int errorCooldown = rowIndexIterator % 9; //9 collums
+            nominants = Block.Revert(targetBox);
+            nominants.IntersectWith(Block.Revert(column));
+            nominants.IntersectWith(Block.Revert(row));
+            
+            required = Block.Revert(upperBox);
+            required.ExceptWith(targetBox);
+            
+            int cellsLeft = 6 - column.Count;
 
-            foreach (var variable in targetBox)
+            if (cellsLeft == required.Count)
+                nominants = required;
+            
+            if (nominants.Count == 0)
             {
-                required.Remove(variable);
+                Debug.LogError("Zero nominants");
+                number = 0;
+            }
+            else
+            {
+                number = nominants.ToList().PullRandom();
             }
 
-            bool onlyRequired = 3 - required.Count == boxIndex;
-
-            while (targetBox.Contains(number)
-                   || column.Contains(number)
-                   || (onlyRequired && !required.Contains(number)))
-            {
-                rowIndexIterator++;
-                errorCooldown++;
-                if (errorCooldown > 8) //out of index
-                {
-                    Debug.LogError("errorCooldown > 8");
-                    break;
-                }
-
-                (TempField[rowMajorIndex], TempField[rowIndexIterator]) = (TempField[rowIndexIterator], TempField[rowMajorIndex]);
-                number = TempField[rowMajorIndex];
-            }
-
+            Field[rowMajorIndex] = number;
+            
             targetBox.Add(number);
             column.Add(number);
-            required.Remove(number);
+            row.Add(number);
         }
         void DefaultColumnSorterer()
         {
-            int number = TempField[rowMajorIndex];
+            int number = Field[rowMajorIndex];
 
-            int rowIndexIterator = rowMajorIndex;
-            int errorCooldown = rowIndexIterator % 9; //9 collums
+            nominants = Block.Revert(targetBox);
+            nominants.IntersectWith(Block.Revert(column));
+            nominants.IntersectWith(Block.Revert(row));
             
-            while (targetBox.Contains(number)
-                   || column.Contains(number))
+            if (nominants.Count == 0)
             {
-                rowIndexIterator++;
-                errorCooldown++;
-                if (errorCooldown > 8) //out of index
-                {
-                    Debug.LogError("errorCooldown > 8");
-                    break;
-                }
-
-                (TempField[rowMajorIndex], TempField[rowIndexIterator]) = (TempField[rowIndexIterator], TempField[rowMajorIndex]);
-                number = TempField[rowMajorIndex];
+                Debug.LogError("errorCooldown > 8");
+                number = 0;
+            }
+            else
+            {
+                number = nominants.ToList().PullRandom();
             }
 
+            Field[rowMajorIndex] = number;
+            
             targetBox.Add(number);
             column.Add(number);
+            row.Add(number);
         }
         
         void FindHiddenLocks_SetToBlockedHashSet_Index32()
         {
             blocked = column4.ToHashSet();
-            blocked.Add(TempField[54]);
-            blocked.Add(TempField[55]);
-            blocked.Add(TempField[56]);
-            int countLine = blocked.Count;
-            if (countLine == 8)
+            blocked.Add(Field[54]);
+            blocked.Add(Field[55]);
+            blocked.Add(Field[56]);
+            if (blocked.Count == 8)
             {
                 blocked = Block.Revert(blocked);
                 return;
             }
             blocked = column4.ToHashSet();
-            blocked.Add(TempField[63]);
-            blocked.Add(TempField[64]);
-            blocked.Add(TempField[65]);
-            countLine = blocked.Count;
-            if (countLine == 8)
+            blocked.Add(Field[63]);
+            blocked.Add(Field[64]);
+            blocked.Add(Field[65]);
+            if (blocked.Count == 8)
             {
                 blocked = Block.Revert(blocked);
                 return;
             }
             blocked = column4.ToHashSet();
-            blocked.Add(TempField[72]);
-            blocked.Add(TempField[73]);
-            blocked.Add(TempField[74]);
-            countLine = blocked.Count;
-            if (countLine == 8)
+            blocked.Add(Field[72]);
+            blocked.Add(Field[73]);
+            blocked.Add(Field[74]);
+            if (blocked.Count == 8)
             {
                 blocked = Block.Revert(blocked);
                 return;
             }
             blocked = new();
         }
-        List<HashSet<int>> FindHiddenLocks_SetToReuireList_Index33_34_35()
+        /*List<HashSet<int>> FindHiddenLocks_SetToReuireList_Index33_34_35()
         {
             List<HashSet<int>> result = new ();
-            
+
             nominants = Block.Revert(column4.ToHashSet());
-            result.Add(nominants);
-            
+
             HashSet<int> checkLine = new HashSet<int>()
+            {
+                TempField[54],
+                TempField[55],
+                TempField[56]
+            };
+            checkLine.IntersectWith(nominants);
+            if (checkLine.Count == 2)
+            {
+                HashSet<int> Line2 = new(nominants);
+                Line2.ExceptWith(checkLine);
+                nominants.Remove(Line2.First());
+                result.Add(Line2);
+                result.Add(nominants);
+                result.Add(nominants);
+
+                return result;
+            }
+
+            checkLine = new HashSet<int>()
             {
                 TempField[63],
                 TempField[64],
@@ -408,30 +411,29 @@ public class GameField : MonoBehaviour
             {
                 HashSet<int> Line2 = new(nominants);
                 Line2.ExceptWith(checkLine);
-                result.Add(Line2);
-
                 nominants.Remove(Line2.First());
                 result.Add(nominants);
-                
+                result.Add(Line2);
+                result.Add(nominants);
+
                 return result;
             }
-            
+
             checkLine = new HashSet<int>()
             {
                 TempField[72],
                 TempField[73],
                 TempField[74]
             };
-            
+
             checkLine.IntersectWith(nominants);
             if (checkLine.Count == 2)
             {
                 HashSet<int> Line3 = new(nominants);
                 Line3.ExceptWith(checkLine);
-                
                 nominants.Remove(Line3.First());
                 result.Add(nominants);
-                
+                result.Add(nominants);
                 result.Add(Line3);
 
                 return result;
@@ -439,16 +441,27 @@ public class GameField : MonoBehaviour
 
             result.Add(nominants);
             result.Add(nominants);
-            
+            result.Add(nominants);
+
+            if (checkLine.Count == 1)
+            {
+                nominants.Remove(checkLine.First());
+                bool random = GameMath.HeadsOrTails();
+                if (random)
+                    result[0] = checkLine;
+                else
+                    result[1] = checkLine;
+            }
+
             return result;
-        }
+        }*/
     }
 
     private void PrintView()
     {
-        for (int i = 0; i < TempField.Length; i++)
+        for (int i = 0; i < Field.Length; i++)
         {
-            Tiles[i].Main.text = TempField[i].ToString();
+            Tiles[i].Main.text = Field[i].ToString();
         }
     }
 }

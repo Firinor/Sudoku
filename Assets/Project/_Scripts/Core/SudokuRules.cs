@@ -11,7 +11,7 @@ public class SudokuRules : MonoBehaviour
     [ContextMenu(nameof(CheckWinCondition))]
     public void CheckWinCondition()
     {
-        Debug.Log(IsSolved(GameField.TempField, out var errors));
+        Debug.Log(IsSolved(GameField.Field, out var errors));
 
         foreach (var errorsIndex in errors)
         {

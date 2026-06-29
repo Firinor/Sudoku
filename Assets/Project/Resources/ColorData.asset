@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ColorData
   RootText: {r: 0.21960786, g: 0.21960786, b: 0.21960786, a: 1}
   PlayerText: {r: 0.31238878, g: 0.3531875, b: 0.5660378, a: 1}
-  ErrorText: {r: 0.3254902, g: 0, b: 0, a: 1}
+  ErrorText: {r: 0.7169812, g: 0.21982914, b: 0.21982914, a: 1}
   DefaultTile: {r: 0.9607844, g: 0.9607844, b: 0.9607844, a: 1}
   PlayerSelectedTile: {r: 0, g: 0, b: 0, a: 0}
   NumberTile: {r: 0, g: 0, b: 0, a: 0}

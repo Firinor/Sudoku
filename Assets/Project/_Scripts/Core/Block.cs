@@ -6,6 +6,11 @@ namespace Sudoku
     {
         public List<int> Numbers = new List<int>{1,2,3,4,5,6,7,8,9};
 
+        public static HashSet<int> NewHashSetFrom1To9()
+        {
+            return new HashSet<int>{1,2,3,4,5,6,7,8,9};
+        }
+        
         public void Shuffle()
         {
             Numbers.Shuffle();
