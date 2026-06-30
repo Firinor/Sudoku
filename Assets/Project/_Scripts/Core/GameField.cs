@@ -139,7 +139,7 @@ public class GameField : MonoBehaviour
         
         int rowMajorIndex;
         
-        for (int i = 0; i < 72; i++) //We are sorting only 8 columns. The last column will be resolved automatically.
+        for (int i = 0; i < 81; i++) //We are sorting only 8 columns. The last column will be resolved automatically.
         {
 #region box
             //column-major cicle
@@ -150,7 +150,7 @@ public class GameField : MonoBehaviour
             //123
             //456
             //789
-            rowMajorIndex = (i % 9) * 9 + (i / 9);//From column-major to row-major
+            rowMajorIndex = ColumnMajorIndex_To_RowMajorIndex(i);//From column-major to row-major
             
             int collumIndex = i / 9;
             column = collumIndex switch
@@ -222,46 +222,25 @@ public class GameField : MonoBehaviour
                     FindHiddenLocks_SetToBlockedHashSet_Index32();
                     J_ColumnSorterer();
                     break;
-                /*case 33:
-                    List<HashSet<int>> results = FindHiddenLocks_SetToReuireList_Index33_34_35();
-                    ToNumber_ColumnSorterer(results[0]);
-                    i++;
-                    rowMajorIndex = (i % 9) * 9 + (i / 9);
-                    ToNumber_ColumnSorterer(results[1]);
-                    i++;
-                    rowMajorIndex = (i % 9) * 9 + (i / 9);
-                    ToNumber_ColumnSorterer(results[2]);
-                    break;*/
+                case 33:
+                    FindHiddenLocks_SetToIndex33_34_35();
+                    i += 2;//to next column => i = 36
+                    break;
+                case 39:
+                case 40:
+                case 41:
+                    P_ColumnSorterer(box4);
+                    break;
+                    //FindHiddenLocks_SetToIndex39_40_41();
+                    //i += 2;//to next box => i = 42
+                    //break;
                 default:
                     DefaultColumnSorterer();
                     break;
             }
         }
-        /*
-        void ToNumber_ColumnSorterer(HashSet<int> target)
-        {
-            int number = TempField[rowMajorIndex];
-
-            int rowIndexIterator = rowMajorIndex;
-            int errorCooldown = rowIndexIterator % 9; //9 collums
-            
-            while (!target.Contains(number))
-            {
-                rowIndexIterator++;
-                errorCooldown++;
-                if (errorCooldown > 8) //out of index
-                {
-                    Debug.LogError("errorCooldown > 8");
-                    break;
-                }
-
-                (TempField[rowMajorIndex], TempField[rowIndexIterator]) = (TempField[rowIndexIterator], TempField[rowMajorIndex]);
-                number = TempField[rowMajorIndex];
-            }
-
-            targetBox.Add(number);
-            column.Add(number);
-        }*/
+        return;
+        
         void J_ColumnSorterer()
         {
             int number = Field[rowMajorIndex];
@@ -289,8 +268,7 @@ public class GameField : MonoBehaviour
         }
         void P_ColumnSorterer(HashSet<int> upperBox)
         {
-            int number = Field[rowMajorIndex];
-
+            int number;
             nominants = Block.Revert(targetBox);
             nominants.IntersectWith(Block.Revert(column));
             nominants.IntersectWith(Block.Revert(row));
@@ -375,86 +353,259 @@ public class GameField : MonoBehaviour
             }
             blocked = new();
         }
-        /*List<HashSet<int>> FindHiddenLocks_SetToReuireList_Index33_34_35()
+        void FindHiddenLocks_SetToIndex33_34_35()
         {
-            List<HashSet<int>> result = new ();
+            nominants = Block.Revert(column);
 
-            nominants = Block.Revert(column4.ToHashSet());
+            int row7blokeratorCount = nominants.Intersect(row7).Count();
+            int row8blokeratorCount = nominants.Intersect(row8).Count();;
+            int row9blokeratorCount = nominants.Intersect(row9).Count();;
 
-            HashSet<int> checkLine = new HashSet<int>()
+            int i33 = ColumnMajorIndex_To_RowMajorIndex(33);
+            int i34 = ColumnMajorIndex_To_RowMajorIndex(34);
+            int i35 = ColumnMajorIndex_To_RowMajorIndex(35);
+            
+            if (row7blokeratorCount == 3 || row8blokeratorCount == 3 || row9blokeratorCount == 3)
             {
-                TempField[54],
-                TempField[55],
-                TempField[56]
-            };
-            checkLine.IntersectWith(nominants);
-            if (checkLine.Count == 2)
-            {
-                HashSet<int> Line2 = new(nominants);
-                Line2.ExceptWith(checkLine);
-                nominants.Remove(Line2.First());
-                result.Add(Line2);
-                result.Add(nominants);
-                result.Add(nominants);
-
-                return result;
+                Debug.LogError("FindHiddenLocks_SetToIndex33_34_35 =>" 
+                               + " row7:" + row7blokeratorCount 
+                               + " row8:" + row8blokeratorCount 
+                               + " row9:" + row9blokeratorCount+"!");
             }
-
-            checkLine = new HashSet<int>()
+            else if (row7blokeratorCount == 2 || row8blokeratorCount == 2 || row9blokeratorCount == 2)
             {
-                TempField[63],
-                TempField[64],
-                TempField[65]
-            };
-            checkLine.IntersectWith(nominants);
-            if (checkLine.Count == 2)
-            {
-                HashSet<int> Line2 = new(nominants);
-                Line2.ExceptWith(checkLine);
-                nominants.Remove(Line2.First());
-                result.Add(nominants);
-                result.Add(Line2);
-                result.Add(nominants);
+                int number;
+                if (row7blokeratorCount == 2)
+                {
+                    number = nominants.Except(row7).First();
+                    Field[i33] = number;
+                    nominants.Remove(number);
+                    box6.Add(number);
+                    column4.Add(number);
+                    row7.Add(number);
 
-                return result;
+                    List<int> listNominants = nominants.ToList();
+                    listNominants.Shuffle();
+                    Field[i34] = listNominants[0];
+                    box6.Add(Field[i34]);
+                    column4.Add(Field[i34]);
+                    row8.Add(Field[i34]);
+                    Field[i35] = listNominants[1];
+                    box6.Add(Field[i35]);
+                    column4.Add(Field[i35]);
+                    row9.Add(Field[i35]);
+                }
+                else if (row8blokeratorCount == 2)
+                {   
+                    number = nominants.Except(row8).First();
+                    Field[i34] = number;
+                    nominants.Remove(number);
+                    box6.Add(number);
+                    column4.Add(number);
+                    row8.Add(number);
+
+                    List<int> listNominants = nominants.ToList();
+                    listNominants.Shuffle();
+                    Field[i33] = listNominants[0];
+                    box6.Add(Field[i33]);
+                    column4.Add(Field[i33]);
+                    row7.Add(Field[i33]);
+                    Field[i35] = listNominants[1];
+                    box6.Add(Field[i35]);
+                    column4.Add(Field[i35]);
+                    row9.Add(Field[i35]);
+                }
+                else//row9blokeratorCount == 2
+                {
+                    number = nominants.Except(row9).First();
+                    Field[i35] = number;
+                    nominants.Remove(number);
+                    box6.Add(number);
+                    column4.Add(number);
+                    row9.Add(number);
+
+                    List<int> listNominants = nominants.ToList();
+                    listNominants.Shuffle();
+                    Field[i33] = listNominants[0];
+                    box6.Add(Field[i33]);
+                    column4.Add(Field[i33]);
+                    row7.Add(Field[i33]);
+                    Field[i34] = listNominants[1];
+                    box6.Add(Field[i34]);
+                    column4.Add(Field[i34]);
+                    row8.Add(Field[i34]);
+                }
             }
-
-            checkLine = new HashSet<int>()
+            else//Count 1
             {
-                TempField[72],
-                TempField[73],
-                TempField[74]
-            };
+                List<int> lockBlockers = new()
+                {
+                    nominants.Intersect(row7).First(),
+                    nominants.Intersect(row8).First(),
+                    nominants.Intersect(row9).First()
+                };
 
-            checkLine.IntersectWith(nominants);
-            if (checkLine.Count == 2)
-            {
-                HashSet<int> Line3 = new(nominants);
-                Line3.ExceptWith(checkLine);
-                nominants.Remove(Line3.First());
-                result.Add(nominants);
-                result.Add(nominants);
-                result.Add(Line3);
-
-                return result;
-            }
-
-            result.Add(nominants);
-            result.Add(nominants);
-            result.Add(nominants);
-
-            if (checkLine.Count == 1)
-            {
-                nominants.Remove(checkLine.First());
-                bool random = GameMath.HeadsOrTails();
-                if (random)
-                    result[0] = checkLine;
+                if (GameMath.HeadsOrTails())
+                {
+                    Field[i33] = lockBlockers[1];
+                    box6.Add(lockBlockers[1]);
+                    column4.Add(lockBlockers[1]);
+                    row7.Add(lockBlockers[1]);
+                    Field[i34] = lockBlockers[2];
+                    box6.Add(lockBlockers[2]);
+                    column4.Add(lockBlockers[2]);
+                    row8.Add(lockBlockers[2]);
+                    Field[i35] = lockBlockers[0];
+                    box6.Add(lockBlockers[0]);
+                    column4.Add(lockBlockers[0]);
+                    row9.Add(lockBlockers[0]);
+                }
                 else
-                    result[1] = checkLine;
+                {
+                    Field[i33] = lockBlockers[2];
+                    box6.Add(lockBlockers[2]);
+                    column4.Add(lockBlockers[2]);
+                    row7.Add(lockBlockers[2]);
+                    Field[i34] = lockBlockers[0];
+                    box6.Add(lockBlockers[0]);
+                    column4.Add(lockBlockers[0]);
+                    row8.Add(lockBlockers[0]);
+                    Field[i35] = lockBlockers[1];
+                    box6.Add(lockBlockers[1]);
+                    column4.Add(lockBlockers[1]);
+                    row9.Add(lockBlockers[1]);
+                }
             }
+        }
+        void FindHiddenLocks_SetToIndex39_40_41()
+        {
+            nominants = Block.Revert(column);
 
-            return result;
-        }*/
+            int row4blokeratorCount = nominants.Intersect(row4).Count();
+            int row5blokeratorCount = nominants.Intersect(row5).Count();;
+            int row6blokeratorCount = nominants.Intersect(row6).Count();;
+
+            int i39 = ColumnMajorIndex_To_RowMajorIndex(39);
+            int i40 = ColumnMajorIndex_To_RowMajorIndex(40);
+            int i41 = ColumnMajorIndex_To_RowMajorIndex(41);
+            
+            if (row4blokeratorCount == 3 || row5blokeratorCount == 3 || row6blokeratorCount == 3)
+            {
+                Debug.LogError("FindHiddenLocks_SetToIndex39_40_41 =>" 
+                               + " row7:" + row4blokeratorCount 
+                               + " row8:" + row5blokeratorCount 
+                               + " row9:" + row6blokeratorCount+"!");
+            }
+            else if (row4blokeratorCount == 2 || row5blokeratorCount == 2 || row6blokeratorCount == 2)
+            {
+                int number;
+                if (row4blokeratorCount == 2)
+                {
+                    number = nominants.Except(row4).First();
+                    Field[i39] = number;
+                    nominants.Remove(number);
+                    box5.Add(number);
+                    column5.Add(number);
+                    row4.Add(number);
+
+                    List<int> listNominants = nominants.ToList();
+                    listNominants.Shuffle();
+                    Field[i40] = listNominants[0];
+                    box5.Add(Field[i40]);
+                    column5.Add(Field[i40]);
+                    row5.Add(Field[i40]);
+                    Field[i41] = listNominants[1];
+                    box5.Add(Field[i41]);
+                    column5.Add(Field[i41]);
+                    row6.Add(Field[i41]);
+                }
+                else if (row5blokeratorCount == 2)
+                {   
+                    number = nominants.Except(row5).First();
+                    Field[i40] = number;
+                    nominants.Remove(number);
+                    box5.Add(number);
+                    column5.Add(number);
+                    row5.Add(number);
+
+                    List<int> listNominants = nominants.ToList();
+                    listNominants.Shuffle();
+                    Field[i39] = listNominants[0];
+                    box5.Add(Field[i39]);
+                    column5.Add(Field[i39]);
+                    row4.Add(Field[i39]);
+                    Field[i41] = listNominants[1];
+                    box5.Add(Field[i41]);
+                    column5.Add(Field[i41]);
+                    row6.Add(Field[i41]);
+                }
+                else//row6blokeratorCount == 2
+                {
+                    number = nominants.Except(row6).First();
+                    Field[i41] = number;
+                    nominants.Remove(number);
+                    box5.Add(number);
+                    column5.Add(number);
+                    row6.Add(number);
+
+                    List<int> listNominants = nominants.ToList();
+                    listNominants.Shuffle();
+                    Field[i39] = listNominants[0];
+                    box5.Add(Field[i39]);
+                    column5.Add(Field[i39]);
+                    row4.Add(Field[i39]);
+                    Field[i40] = listNominants[1];
+                    box5.Add(Field[i40]);
+                    column5.Add(Field[i40]);
+                    row5.Add(Field[i40]);
+                }
+            }
+            else//Count 1
+            {
+                List<int> lockBlockers = new()
+                {
+                    nominants.Intersect(row4).First(),
+                    nominants.Intersect(row5).First(),
+                    nominants.Intersect(row6).First()
+                };
+
+                if (GameMath.HeadsOrTails())
+                {
+                    Field[i39] = lockBlockers[1];
+                    box5.Add(lockBlockers[1]);
+                    column5.Add(lockBlockers[1]);
+                    row4.Add(lockBlockers[1]);
+                    Field[i40] = lockBlockers[2];
+                    box6.Add(lockBlockers[2]);
+                    column5.Add(lockBlockers[2]);
+                    row5.Add(lockBlockers[2]);
+                    Field[i41] = lockBlockers[0];
+                    box6.Add(lockBlockers[0]);
+                    column5.Add(lockBlockers[0]);
+                    row6.Add(lockBlockers[0]);
+                }
+                else
+                {
+                    Field[i39] = lockBlockers[2];
+                    box5.Add(lockBlockers[2]);
+                    column5.Add(lockBlockers[2]);
+                    row4.Add(lockBlockers[2]);
+                    Field[i40] = lockBlockers[0];
+                    box6.Add(lockBlockers[0]);
+                    column5.Add(lockBlockers[0]);
+                    row5.Add(lockBlockers[0]);
+                    Field[i41] = lockBlockers[1];
+                    box6.Add(lockBlockers[1]);
+                    column5.Add(lockBlockers[1]);
+                    row6.Add(lockBlockers[1]);
+                }
+            }
+        }
+    }
+
+    private static int ColumnMajorIndex_To_RowMajorIndex(int i)
+    {
+        return (i % 9) * 9 + (i / 9);
     }
 
     private void PrintView()
