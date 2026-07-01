@@ -226,14 +226,10 @@ public class GameField : MonoBehaviour
                     FindHiddenLocks_SetToIndex33_34_35();
                     i += 2;//to next column => i = 36
                     break;
-                case 39:
-                case 40:
-                case 41:
-                    P_ColumnSorterer(box4);
+                case 38:
+                    FindHiddenLocks_SetToIndex38__39_40_41__42_43_44();
+                    i = 44;//to next box => i = 45
                     break;
-                    //FindHiddenLocks_SetToIndex39_40_41();
-                    //i += 2;//to next box => i = 42
-                    //break;
                 default:
                     DefaultColumnSorterer();
                     break;
@@ -307,7 +303,7 @@ public class GameField : MonoBehaviour
             
             if (nominants.Count == 0)
             {
-                Debug.LogError("errorCooldown > 8");
+                Debug.LogError("errorCooldown "+rowMajorIndex+" > 8");
                 number = 0;
             }
             else
@@ -477,128 +473,218 @@ public class GameField : MonoBehaviour
                 }
             }
         }
-        void FindHiddenLocks_SetToIndex39_40_41()
+        void FindHiddenLocks_SetToIndex38__39_40_41__42_43_44()
         {
-            nominants = Block.Revert(column);
+            List<int> nominants = Block.Revert(box4).ToList();
 
-            int row4blokeratorCount = nominants.Intersect(row4).Count();
-            int row5blokeratorCount = nominants.Intersect(row5).Count();;
-            int row6blokeratorCount = nominants.Intersect(row6).Count();;
-
-            int i39 = ColumnMajorIndex_To_RowMajorIndex(39);
-            int i40 = ColumnMajorIndex_To_RowMajorIndex(40);
-            int i41 = ColumnMajorIndex_To_RowMajorIndex(41);
-            
-            if (row4blokeratorCount == 3 || row5blokeratorCount == 3 || row6blokeratorCount == 3)
+            Debug.Log("nominants:"+nominants[0]+""+nominants[1]+""+nominants[2]+""+nominants[3]);
+            foreach (var nominant in nominants)
             {
-                Debug.LogError("FindHiddenLocks_SetToIndex39_40_41 =>" 
-                               + " row7:" + row4blokeratorCount 
-                               + " row8:" + row5blokeratorCount 
-                               + " row9:" + row6blokeratorCount+"!");
-            }
-            else if (row4blokeratorCount == 2 || row5blokeratorCount == 2 || row6blokeratorCount == 2)
-            {
-                int number;
-                if (row4blokeratorCount == 2)
-                {
-                    number = nominants.Except(row4).First();
-                    Field[i39] = number;
-                    nominants.Remove(number);
-                    box5.Add(number);
-                    column5.Add(number);
-                    row4.Add(number);
+                if(row3.Contains(nominant))
+                    continue;
+                
+                Debug.Log("nominant:"+nominant);
+                int nominantIndex38 = nominant;
+                List<int> tempColumn = column5.ToList();
+                tempColumn.Add(nominantIndex38);
+                List<int> tempUpBox = box4.ToList();
+                tempUpBox.Add(nominantIndex38);
+                List<int> nominantBox5 = Block.Revert(tempUpBox).ToList();
+                Debug.Log("requaire:"+nominantBox5[0]+""+nominantBox5[1]+""+nominantBox5[2]+" Count:"+nominantBox5.Count);
+                List<int> box5Pool = Block.Revert(box5).ToList();
+                
+                foreach (var value in nominantBox5)
+                    box5Pool.Remove(value);
+                foreach (var value in tempColumn)
+                    box5Pool.Remove(value);
+                foreach (var value in box5)
+                    nominantBox5.Remove(value);
+                while(nominantBox5.Count < 3)
+                    nominantBox5.Add(box5Pool.PullRandom());
+                
+                Debug.Log("nominantBox5:"+nominantBox5[0]+""+nominantBox5[1]+""+nominantBox5[2]+" Count:"+nominantBox5.Count);
 
-                    List<int> listNominants = nominants.ToList();
-                    listNominants.Shuffle();
-                    Field[i40] = listNominants[0];
-                    box5.Add(Field[i40]);
-                    column5.Add(Field[i40]);
-                    row5.Add(Field[i40]);
-                    Field[i41] = listNominants[1];
-                    box5.Add(Field[i41]);
-                    column5.Add(Field[i41]);
-                    row6.Add(Field[i41]);
-                }
-                else if (row5blokeratorCount == 2)
-                {   
-                    number = nominants.Except(row5).First();
-                    Field[i40] = number;
-                    nominants.Remove(number);
-                    box5.Add(number);
-                    column5.Add(number);
-                    row5.Add(number);
+                List<int> nominantBox6 = tempColumn.ToList();
+                nominantBox6.AddRange(nominantBox5);
+                nominantBox6 = Block.Revert(nominantBox6);
+                Debug.Log("nominantBox6:"+nominantBox6[0]+""+nominantBox6[1]+""+nominantBox6[2]+" Count:"+nominantBox6.Count);
+                
+                int row4blokeratorCount = nominantBox5.Intersect(row4).Count();
+                int row5blokeratorCount = nominantBox5.Intersect(row5).Count();
+                int row6blokeratorCount = nominantBox5.Intersect(row6).Count();
+                Debug.Log("blockerator456:"+row4blokeratorCount+""+row5blokeratorCount+""+row6blokeratorCount);
 
-                    List<int> listNominants = nominants.ToList();
-                    listNominants.Shuffle();
-                    Field[i39] = listNominants[0];
-                    box5.Add(Field[i39]);
-                    column5.Add(Field[i39]);
-                    row4.Add(Field[i39]);
-                    Field[i41] = listNominants[1];
-                    box5.Add(Field[i41]);
-                    column5.Add(Field[i41]);
-                    row6.Add(Field[i41]);
-                }
-                else//row6blokeratorCount == 2
+                if (row4blokeratorCount == 3 || row5blokeratorCount == 3 || row6blokeratorCount == 3)
                 {
-                    number = nominants.Except(row6).First();
-                    Field[i41] = number;
-                    nominants.Remove(number);
-                    box5.Add(number);
-                    column5.Add(number);
-                    row6.Add(number);
+                    continue;
+                }
+                if (row4blokeratorCount == 2 || row5blokeratorCount == 2 || row6blokeratorCount == 2)
+                {
+                    int number;
+                    if (row4blokeratorCount == 2)
+                    {
+                        number = nominantBox5.Except(row4).First();
+                        List<int> listNominants = nominantBox5.ToList();
+                        nominantBox5[0] = number;
+                        listNominants.Remove(number);
+                        listNominants.Shuffle();
+                        nominantBox5[1] = listNominants[0];
+                        nominantBox5[2] = listNominants[1];
+                    }
+                    else if (row5blokeratorCount == 2)
+                    {
+                        number = nominantBox5.Except(row5).First();
+                        List<int> listNominants = nominantBox5.ToList();
+                        nominantBox5[1] = number;
+                        listNominants.Remove(number);
+                        listNominants.Shuffle();
+                        nominantBox5[0] = listNominants[0];
+                        nominantBox5[2] = listNominants[1];
+                    }
+                    else //row6blokeratorCount == 2
+                    {
+                        number = nominantBox5.Except(row6).First();
+                        List<int> listNominants = nominantBox5.ToList();
+                        nominantBox5[2] = number;
+                        listNominants.Remove(number);
+                        listNominants.Shuffle();
+                        nominantBox5[0] = listNominants[0];
+                        nominantBox5[1] = listNominants[1];
+                    }
+                }
+                else //Count 1
+                {
+                    List<int> lockBlockers = new()
+                    {
+                        nominantBox5.Intersect(row4).First(),
+                        nominantBox5.Intersect(row5).First(),
+                        nominantBox5.Intersect(row6).First()
+                    };
 
-                    List<int> listNominants = nominants.ToList();
-                    listNominants.Shuffle();
-                    Field[i39] = listNominants[0];
-                    box5.Add(Field[i39]);
-                    column5.Add(Field[i39]);
-                    row4.Add(Field[i39]);
-                    Field[i40] = listNominants[1];
-                    box5.Add(Field[i40]);
-                    column5.Add(Field[i40]);
-                    row5.Add(Field[i40]);
+                    if (GameMath.HeadsOrTails())
+                    {
+                        nominantBox5[0] = lockBlockers[1];
+                        nominantBox5[1] = lockBlockers[2];
+                        nominantBox5[2] = lockBlockers[0];
+                    }
+                    else
+                    {
+                        nominantBox5[0] = lockBlockers[2];
+                        nominantBox5[1] = lockBlockers[0];
+                        nominantBox5[2] = lockBlockers[1];
+                    }
                 }
-            }
-            else//Count 1
-            {
-                List<int> lockBlockers = new()
-                {
-                    nominants.Intersect(row4).First(),
-                    nominants.Intersect(row5).First(),
-                    nominants.Intersect(row6).First()
-                };
+                
+                /////
+                int row7blokeratorCount = nominantBox6.Intersect(row7).Count();
+                int row8blokeratorCount = nominantBox6.Intersect(row8).Count();
+                int row9blokeratorCount = nominantBox6.Intersect(row9).Count();
 
-                if (GameMath.HeadsOrTails())
+                Debug.Log("blockerator789:"+row7blokeratorCount+""+row8blokeratorCount+""+row9blokeratorCount);
+                
+                if (row7blokeratorCount == 3 || row8blokeratorCount == 3 || row9blokeratorCount == 3)
                 {
-                    Field[i39] = lockBlockers[1];
-                    box5.Add(lockBlockers[1]);
-                    column5.Add(lockBlockers[1]);
-                    row4.Add(lockBlockers[1]);
-                    Field[i40] = lockBlockers[2];
-                    box6.Add(lockBlockers[2]);
-                    column5.Add(lockBlockers[2]);
-                    row5.Add(lockBlockers[2]);
-                    Field[i41] = lockBlockers[0];
-                    box6.Add(lockBlockers[0]);
-                    column5.Add(lockBlockers[0]);
-                    row6.Add(lockBlockers[0]);
+                    continue;
                 }
-                else
+                if (row7blokeratorCount == 2 || row8blokeratorCount == 2 || row9blokeratorCount == 2)
                 {
-                    Field[i39] = lockBlockers[2];
-                    box5.Add(lockBlockers[2]);
-                    column5.Add(lockBlockers[2]);
-                    row4.Add(lockBlockers[2]);
-                    Field[i40] = lockBlockers[0];
-                    box6.Add(lockBlockers[0]);
-                    column5.Add(lockBlockers[0]);
-                    row5.Add(lockBlockers[0]);
-                    Field[i41] = lockBlockers[1];
-                    box6.Add(lockBlockers[1]);
-                    column5.Add(lockBlockers[1]);
-                    row6.Add(lockBlockers[1]);
+                    int number;
+                    if (row7blokeratorCount == 2)
+                    {
+                        number = nominantBox6.Except(row7).First();
+                        List<int> listNominants = nominantBox6.ToList();
+                        nominantBox6[0] = number;
+                        listNominants.Remove(number);
+                        listNominants.Shuffle();
+                        nominantBox6[1] = listNominants[0];
+                        nominantBox6[2] = listNominants[1];
+                    }
+                    else if (row8blokeratorCount == 2)
+                    {
+                        number = nominantBox6.Except(row8).First();
+                        List<int> listNominants = nominantBox6.ToList();
+                        nominantBox6[1] = number;
+                        listNominants.Remove(number);
+                        listNominants.Shuffle();
+                        nominantBox6[0] = listNominants[0];
+                        nominantBox6[2] = listNominants[1];
+                    }
+                    else //row9blokeratorCount == 2
+                    {
+                        number = nominantBox6.Except(row9).First();
+                        List<int> listNominants = nominantBox6.ToList();
+                        nominantBox6[2] = number;
+                        listNominants.Remove(number);
+                        listNominants.Shuffle();
+                        nominantBox6[0] = listNominants[0];
+                        nominantBox6[1] = listNominants[1];
+                    }
                 }
+                else //Count 1
+                {
+                    List<int> lockBlockers = new()
+                    {
+                        nominantBox6.Intersect(row7).First(),
+                        nominantBox6.Intersect(row8).First(),
+                        nominantBox6.Intersect(row9).First()
+                    };
+
+                    if (GameMath.HeadsOrTails())
+                    {
+                        nominantBox6[0] = lockBlockers[1];
+                        nominantBox6[1] = lockBlockers[2];
+                        nominantBox6[2] = lockBlockers[0];
+                    }
+                    else
+                    {
+                        nominantBox6[0] = lockBlockers[2];
+                        nominantBox6[1] = lockBlockers[0];
+                        nominantBox6[2] = lockBlockers[1];
+                    }
+                }
+                
+                
+                int i38 = ColumnMajorIndex_To_RowMajorIndex(38);
+                Field[i38] = nominantIndex38;
+                box4.Add(Field[i38]);
+                column5.Add(Field[i38]);
+                row3.Add(Field[i38]);
+                
+                Debug.Log("nominantBox5Set:"+nominantBox5[0]+""+nominantBox5[1]+""+nominantBox5[2]);
+                int i39 = ColumnMajorIndex_To_RowMajorIndex(39);
+                Field[i39] = nominantBox5[0];
+                box5.Add(Field[i39]);
+                column5.Add(Field[i39]);
+                row4.Add(Field[i39]);
+                int i40 = ColumnMajorIndex_To_RowMajorIndex(40);
+                Field[i40] = nominantBox5[1];
+                box5.Add(Field[i40]);
+                column5.Add(Field[i40]);
+                row5.Add(Field[i40]);
+                int i41 = ColumnMajorIndex_To_RowMajorIndex(41);
+                Field[i41] = nominantBox5[2];
+                box5.Add(Field[i41]);
+                column5.Add(Field[i41]);
+                row6.Add(Field[i41]);
+                
+                Debug.Log("nominantBox6Set:"+nominantBox6[0]+""+nominantBox6[1]+""+nominantBox6[2]);
+                int i42 = ColumnMajorIndex_To_RowMajorIndex(42);
+                Field[i42] = nominantBox6[0];
+                box6.Add(Field[i42]);
+                column5.Add(Field[i42]);
+                row7.Add(Field[i42]);
+                int i43 = ColumnMajorIndex_To_RowMajorIndex(43);
+                Field[i43] = nominantBox6[1];
+                box6.Add(Field[i43]);
+                column5.Add(Field[i43]);
+                row8.Add(Field[i43]);
+                int i44 = ColumnMajorIndex_To_RowMajorIndex(44);
+                Field[i44] = nominantBox6[2];
+                box6.Add(Field[i44]);
+                column5.Add(Field[i44]);
+                row9.Add(Field[i44]);
+                
+                break;
             }
         }
     }
